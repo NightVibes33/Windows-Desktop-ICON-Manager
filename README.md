@@ -4,9 +4,15 @@
 
 # Desktop Layout Manager
 
-A native Windows utility for viewing desktop icons, saving and restoring layouts, checking broken shortcuts, and inspecting saved layouts from offline Windows profile backups.
+A native Windows utility for viewing desktop icons, saving Explorer's desktop layout registry values, checking missing shortcuts, and inspecting saved layout data in offline Windows profile hives.
 
 Built with **C# and WinUI 3**. No Python, script launcher, or browser-based interface.
+
+## Project Status
+
+This repository currently provides the application source, backend checks, artwork, and packaging scripts. **There is no published installer or portable download yet.** Build from source using the commands below.
+
+The x64 application builds successfully. Backend checks have passed on the development PC, and offline hive inspection has been exercised with a saved profile hive. Layout restoration, arrangement changes, shortcut replacement, and installer/portable lifecycle testing have not been validated end to end. These are implemented actions, not verified compatibility guarantees.
 
 ## Contents
 
@@ -28,32 +34,32 @@ Built with **C# and WinUI 3**. No Python, script launcher, or browser-based inte
 
 | Area | Functionality |
 | --- | --- |
-| Desktop layout | Real Windows icons with persistent names, search, and category filters. |
+| Desktop layout | Reads visible Explorer items and retrieves Windows Shell icons where their paths can be resolved; includes labels, search, and category filters. |
 | Desktop map | Current Explorer icon positions, labels, and zoom controls. |
-| Shortcut health | Checks saved desktop entries and local shortcut targets with readable missing-target details. |
+| Shortcut health | Compares saved layout names with the user/public desktop folders and checks fully qualified `.lnk` targets for file or folder existence. |
 | Snapshots | JSON layout backups, restoration, and confirmed deletion to the Recycle Bin. |
 | Offline recovery | Inspects desktop layout information in an offline `NTUSER.DAT` and can apply it to the current profile. |
-| Arrangement | Disables automatic arrangement and resets the saved sorting setting. |
+| Arrangement | Shows the saved auto-arrange flag and offers to disable it, enable alignment, and remove the saved sorting value. |
 | Appearance | Native window chrome, custom application icon, and system, light, and dark themes. |
 
 ## Requirements
 
-- Windows 10 version 1809 (build 17763) or later, or Windows 11.
-- The release script targets Windows x64; other architectures are not currently distributed by that script.
-- Windows Explorer for live position reading and layout changes.
+- Windows with Windows Explorer. The project declares build 17763 as its minimum and targets the Windows 10 SDK, but that is not a tested Windows support matrix. Older Windows versions have not been validated.
+- Use the x64 build. The live desktop reader uses a 64-bit Explorer structure layout; x86 and ARM64 publish profiles are present but are not verified implementations.
+- Desktop icons must be visible for the live board and map. Hidden icons or unavailable Explorer cause that view to report an error.
 - A writable location for backups and diagnostic output.
 
-Release packaging is configured to include .NET and Windows App SDK runtimes. End users do not need Python or a separately installed .NET SDK. Building from source requires the development tools below.
+The x64 publish profile is configured to include .NET, and the packaging command requests the Windows App SDK runtime as well. A correctly built self-contained package is intended not to require separate runtime installation. That package still needs clean-machine testing. Building requires the development tools below; Python is not used.
 
 ## Installation
 
-The release script creates these artifacts. Filenames describe build outputs, not an already-published release.
+**No release assets are currently published.** The instructions in this section describe the packages produced when a maintainer runs the release script successfully. For the current source checkout, use [Building](#building).
 
 | Artifact | Purpose |
 | --- | --- |
-| `DesktopLayoutManager-<version>-Setup-x64.exe` | Per-user installation with Start menu shortcuts and an uninstaller. |
-| `DesktopLayoutManager-<version>-Portable-x64.zip` | Extract and run without installing. |
-| `SHA256SUMS.txt` | SHA-256 checksums for both packages. |
+| `DesktopLayoutManager-<version>-Setup-x64.exe` | Planned build output: per-user setup with Start menu shortcuts and an uninstaller. |
+| `DesktopLayoutManager-<version>-Portable-x64.zip` | Planned build output: a complete extracted application folder. |
+| `SHA256SUMS.txt` | Generated checksums for the two build outputs. |
 
 ### Installer
 
@@ -62,7 +68,7 @@ The release script creates these artifacts. Filenames describe build outputs, no
 3. Optionally select the desktop shortcut.
 4. Launch **Desktop Layout Manager** from the Start menu or installation folder.
 
-Installation is per-user and does not request administrator rights by default. Uninstall through Windows **Settings > Apps**, or the Start menu uninstall shortcut. The installer does not intentionally remove application data stored outside the installation folder.
+The Inno Setup definition is configured for per-user installation without requesting administrator rights by default. It defines Start menu and uninstall shortcuts, plus an optional desktop shortcut. It contains no instruction to delete the separate application data directory on uninstall. Actual installation, upgrades, and uninstallation still require testing.
 
 ### Portable
 
@@ -70,7 +76,7 @@ Installation is per-user and does not request administrator rights by default. U
 2. Run `DesktopLayoutManager.exe`.
 3. Keep `portable.flag`, all accompanying libraries, and `Assets` together with the executable.
 
-This is a complete application folder, not a single-file EXE. The included `portable.flag` selects a `Data` folder beside the executable. Move the whole folder to retain your data. Do not run directly inside the ZIP.
+The packaging script creates a complete application folder, not a single-file EXE. It adds `portable.flag`, which selects a `Data` folder beside the executable. Move the whole folder to retain your data. Do not run directly inside the ZIP. This packaging workflow has not yet been tested end to end.
 
 To update, close the app, back up `Data`, and replace the application files with the newer package while preserving `Data` and `portable.flag`.
 
@@ -94,7 +100,7 @@ Deletion requires confirmation and moves the snapshot to the Recycle Bin. A layo
 
 Review missing entries and local shortcut targets. A disconnected drive or moved application may appear as a broken target; check the displayed location before repairing it.
 
-Where a replacement is available, review it before applying the repair. The existing shortcut is backed up before replacement. The app does not download or reinstall missing programs.
+The app searches the user and common Start menus for a usable source with the same filename. When found, the row offers **Restore**; otherwise **Choose source** accepts an `.exe`, `.lnk`, or `.url`. After confirmation, it copies a supplied shortcut or creates a shortcut to the supplied executable. An existing destination file is backed up first. This does not recover deleted file contents or download/reinstall missing programs.
 
 ### Offline Recovery
 
@@ -103,7 +109,7 @@ Where a replacement is available, review it before applying the repair. The exis
 3. Click **Inspect** and review the saved layout details.
 4. Only confirm restoration when you intend to apply that layout to your current desktop.
 
-Inspection opens the hive read-only. Restoration writes desktop layout values to the **current Windows profile**, not the selected source hive. It does not recover the whole profile, documents, or software. Avoid actively loaded profile hives and preserve an untouched source copy.
+Inspection opens the hive read-only and reports saved item names and registry value count. It does not preview that hive's saved icon positions on the map. Restoration writes saved values from `Software\Microsoft\Windows\Shell\Bags\1\Desktop` to that key in the **current Windows profile**, not the selected source hive. It does not recover the whole profile, documents, or software. Avoid actively loaded profile hives and preserve an untouched source copy.
 
 ## Data and Backups
 
@@ -120,7 +126,7 @@ Snapshots can reveal desktop item names. Diagnostics and screenshots can reveal 
 
 ## Building
 
-Development requires Windows, the **.NET 10 SDK**, and Windows SDK / WinUI 3 build tooling. Visual Studio with WinUI application development tools is a suitable environment. Initial NuGet restore requires internet access.
+Development requires Windows, the **.NET 10 SDK**, and Windows SDK / WinUI 3 build tooling. Initial NuGet restore requires internet access. The project currently uses floating `1.*` Windows App SDK and `10.*` SDK BuildTools package versions, so dependency resolution is not pinned for reproducible builds.
 
 Run from the repository root:
 
@@ -151,7 +157,7 @@ If compiler discovery fails, specify its actual path:
 .\Packaging\Build-Release.ps1 -Version 1.0.0 -InnoCompiler "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
 ```
 
-The script publishes the native application, includes this README, adds `portable.flag` to the portable copy, compiles setup, and creates checksums:
+The script is written to publish the native application, include this README, add `portable.flag` to the portable copy, compile setup, and create checksums. A successful run should produce:
 
 ```text
 dist/
@@ -172,7 +178,9 @@ Run focused backend checks:
 dotnet run --project .\NativeChecks\NativeChecks.csproj -c Release
 ```
 
-Checks cover layout parsing, Unicode, malformed input rejection, snapshot byte preservation, icon retrieval, and snapshot deletion. They read the current desktop and create a temporary snapshot that is then moved to the Recycle Bin. They do not restore layouts or repair shortcuts.
+Checks cover layout parsing, Unicode, malformed input rejection, snapshot byte preservation, icon retrieval, and snapshot deletion. They depend on the current Windows profile having a saved `IconLayouts` value and on visible desktop icons. The check compares the live item count to the saved name count and requires almost all icons to resolve; a legitimate difference between saved and live state can fail it. This is a machine-dependent integration check, not an isolated unit-test suite.
+
+The checks create a temporary snapshot and then move it to the Recycle Bin. They do not restore layouts or repair shortcuts.
 
 Capture the UI using a published build:
 
@@ -196,7 +204,7 @@ A successful build or launched process is not proof of successful restoration. R
 
 | Symptom | What to check |
 | --- | --- |
-| App will not launch | Extract or install the complete package. Check `startup-error.txt` in the data root. |
+| App will not launch | Keep the complete published folder together. If application startup reached its exception handler, it may have written `startup-error.txt` in the data root; failures before that point will not produce this file. |
 | "Unable to complete action" | Read the accompanying message and `operation-errors.txt`. Report the exact action and Windows version. |
 | Offline hive is in use / inaccessible | Choose a readable offline copy, not an active profile's `NTUSER.DAT`. |
 | Offline hive has no layout | The file may not contain the desktop registry values expected by this app. |
