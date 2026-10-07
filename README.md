@@ -19,10 +19,6 @@ Version **1.0.0** is available as a Windows x64 installer and portable ZIP, alon
 - [SHA-256 checksums](https://github.com/NightVibes33/Windows-Desktop-ICON-Manager/releases/download/v1.0.0/SHA256SUMS.txt)
 - [Release notes](https://github.com/NightVibes33/Windows-Desktop-ICON-Manager/releases/tag/v1.0.0)
 
-The x64 application builds successfully. Backend checks have passed on the development PC, and offline hive inspection has been exercised with a saved profile hive. Layout restoration, arrangement changes, and shortcut replacement have not been validated end to end. These are implemented actions, not verified compatibility guarantees. See the release notes for package smoke-test coverage.
-
-Version 1.0.0 package checks on the development PC passed: installer execution, installed-app launch and UI capture, Start menu shortcuts and Windows uninstall registration, uninstall removal with data retention, and extracted portable launch with adjacent `Data` storage. The portable copy resolved 188 icons and successfully inspected an offline test hive. This does not establish clean-machine or older-Windows compatibility.
-
 ## Contents
 
 - [Features](#features)
