@@ -10,13 +10,23 @@ Built with **C# and WinUI 3**. No Python, script launcher, or browser-based inte
 
 ## Project Status
 
-This repository currently provides the application source, backend checks, artwork, and packaging scripts. **There is no published installer or portable download yet.** Build from source using the commands below.
+Version **1.0.0** is available as a Windows x64 installer and portable ZIP, alongside the source, backend checks, artwork, and packaging scripts.
 
-The x64 application builds successfully. Backend checks have passed on the development PC, and offline hive inspection has been exercised with a saved profile hive. Layout restoration, arrangement changes, shortcut replacement, and installer/portable lifecycle testing have not been validated end to end. These are implemented actions, not verified compatibility guarantees.
+## Downloads
+
+- [Windows x64 installer](https://github.com/NightVibes33/Windows-Desktop-ICON-Manager/releases/download/v1.0.0/DesktopLayoutManager-1.0.0-Setup-x64.exe)
+- [Windows x64 portable ZIP](https://github.com/NightVibes33/Windows-Desktop-ICON-Manager/releases/download/v1.0.0/DesktopLayoutManager-1.0.0-Portable-x64.zip)
+- [SHA-256 checksums](https://github.com/NightVibes33/Windows-Desktop-ICON-Manager/releases/download/v1.0.0/SHA256SUMS.txt)
+- [Release notes](https://github.com/NightVibes33/Windows-Desktop-ICON-Manager/releases/tag/v1.0.0)
+
+The x64 application builds successfully. Backend checks have passed on the development PC, and offline hive inspection has been exercised with a saved profile hive. Layout restoration, arrangement changes, and shortcut replacement have not been validated end to end. These are implemented actions, not verified compatibility guarantees. See the release notes for package smoke-test coverage.
+
+Version 1.0.0 package checks on the development PC passed: installer execution, installed-app launch and UI capture, Start menu shortcuts and Windows uninstall registration, uninstall removal with data retention, and extracted portable launch with adjacent `Data` storage. The portable copy resolved 188 icons and successfully inspected an offline test hive. This does not establish clean-machine or older-Windows compatibility.
 
 ## Contents
 
 - [Features](#features)
+- [Downloads](#downloads)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Using the App](#using-the-app)
@@ -49,17 +59,17 @@ The x64 application builds successfully. Backend checks have passed on the devel
 - Desktop icons must be visible for the live board and map. Hidden icons or unavailable Explorer cause that view to report an error.
 - A writable location for backups and diagnostic output.
 
-The x64 publish profile is configured to include .NET, and the packaging command requests the Windows App SDK runtime as well. A correctly built self-contained package is intended not to require separate runtime installation. That package still needs clean-machine testing. Building requires the development tools below; Python is not used.
+The published packages include .NET and Windows App SDK runtime files. A separately installed SDK is not needed to run them. Clean-machine and older-Windows compatibility still need testing. Building requires the development tools below; Python is not used.
 
 ## Installation
 
-**No release assets are currently published.** The instructions in this section describe the packages produced when a maintainer runs the release script successfully. For the current source checkout, use [Building](#building).
+Download a package from [Downloads](#downloads). Choose the installer for a normal per-user installation or the portable ZIP to run from a writable folder without installing. Developers can use [Building](#building).
 
 | Artifact | Purpose |
 | --- | --- |
-| `DesktopLayoutManager-<version>-Setup-x64.exe` | Planned build output: per-user setup with Start menu shortcuts and an uninstaller. |
-| `DesktopLayoutManager-<version>-Portable-x64.zip` | Planned build output: a complete extracted application folder. |
-| `SHA256SUMS.txt` | Generated checksums for the two build outputs. |
+| `DesktopLayoutManager-1.0.0-Setup-x64.exe` | Per-user setup with Start menu shortcuts and an uninstaller. |
+| `DesktopLayoutManager-1.0.0-Portable-x64.zip` | A complete application folder to extract and run. |
+| `SHA256SUMS.txt` | Checksums for both downloads. |
 
 ### Installer
 
@@ -68,7 +78,7 @@ The x64 publish profile is configured to include .NET, and the packaging command
 3. Optionally select the desktop shortcut.
 4. Launch **Desktop Layout Manager** from the Start menu or installation folder.
 
-The Inno Setup definition is configured for per-user installation without requesting administrator rights by default. It defines Start menu and uninstall shortcuts, plus an optional desktop shortcut. It contains no instruction to delete the separate application data directory on uninstall. Actual installation, upgrades, and uninstallation still require testing.
+Setup installs for the current user without requesting administrator rights by default. It creates Start menu and uninstall shortcuts, plus an optional desktop shortcut. It contains no instruction to delete the separate application data directory on uninstall. Upgrade behavior has not yet been tested.
 
 ### Portable
 
@@ -76,7 +86,7 @@ The Inno Setup definition is configured for per-user installation without reques
 2. Run `DesktopLayoutManager.exe`.
 3. Keep `portable.flag`, all accompanying libraries, and `Assets` together with the executable.
 
-The packaging script creates a complete application folder, not a single-file EXE. It adds `portable.flag`, which selects a `Data` folder beside the executable. Move the whole folder to retain your data. Do not run directly inside the ZIP. This packaging workflow has not yet been tested end to end.
+The portable ZIP contains a complete application folder, not a single-file EXE. Its `portable.flag` selects a `Data` folder beside the executable. Move the whole folder to retain your data. Do not run directly inside the ZIP.
 
 To update, close the app, back up `Data`, and replace the application files with the newer package while preserving `Data` and `portable.flag`.
 
