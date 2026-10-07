@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Native (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "Native (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
