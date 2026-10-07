@@ -30,6 +30,7 @@ Version 1.0.0 package checks on the development PC passed: installer execution, 
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Using the App](#using-the-app)
+- [Recover an Older NTUSER.DAT With ShadowExplorer](#recover-an-older-ntuserdat-with-shadowexplorer)
 - [Data and Backups](#data-and-backups)
 - [Building](#building)
 - [Release Packaging](#release-packaging)
@@ -114,12 +115,45 @@ The app searches the user and common Start menus for a usable source with the sa
 
 ### Offline Recovery
 
-1. Obtain a readable offline copy of your profile's `NTUSER.DAT` from a backup.
+1. Obtain a readable offline copy of your profile's `NTUSER.DAT` from a backup. If you do not have one, see [ShadowExplorer recovery](#recover-an-older-ntuserdat-with-shadowexplorer) below.
 2. Select it in **Offline recovery**.
 3. Click **Inspect** and review the saved layout details.
 4. Only confirm restoration when you intend to apply that layout to your current desktop.
 
 Inspection opens the hive read-only and reports saved item names and registry value count. It does not preview that hive's saved icon positions on the map. Restoration writes saved values from `Software\Microsoft\Windows\Shell\Bags\1\Desktop` to that key in the **current Windows profile**, not the selected source hive. It does not recover the whole profile, documents, or software. Avoid actively loaded profile hives and preserve an untouched source copy.
+
+## Recover an Older NTUSER.DAT With ShadowExplorer
+
+If your icons were rearranged before you saved an app snapshot, an older Windows shadow copy may contain your previous layout in `NTUSER.DAT`. ShadowExplorer is a separate third-party tool; it is not bundled with Desktop Layout Manager. It can browse existing Windows shadow copies and export files from them. See the [official overview](https://www.shadowexplorer.com/).
+
+### Export the Older Hive
+
+1. Download ShadowExplorer from its [official downloads page](https://www.shadowexplorer.com/downloads.html), then install or extract it.
+2. Open ShadowExplorer. If access is denied, try **Run as administrator**.
+3. Select the drive containing your Windows user profile, usually **C:**.
+4. Select a shadow-copy date from **before** the icon layout changed.
+5. Browse to `Users\<your-profile-folder>` inside that copy and find `NTUSER.DAT`. This is the file directly inside your profile folder, not a file in its Desktop or AppData folders. The folder name may differ from your Windows display name.
+6. Right-click `NTUSER.DAT`, choose **Export**, and select a separate destination such as `Documents\DesktopLayoutRecovery\2026-10-01`. Use a different destination folder for each date you export.
+
+The date-selection and export workflow is described in the [official ShadowExplorer manual](https://www.shadowexplorer.com/documentation/manual.html).
+
+**Never export over the live `C:\Users\<your-profile-folder>\NTUSER.DAT`.** Do not replace your current profile hive or import it into Registry Editor. Export a separate copy for this app to inspect. Profile hives can contain sensitive information; do not upload them to this repository or public issue reports.
+
+### Inspect It in Desktop Layout Manager
+
+1. Use **Save snapshot** to preserve your current saved layout.
+2. Open **Offline recovery > Browse** and select the exported `NTUSER.DAT`.
+3. Click **Inspect**. Check the reported saved item names and registry value count; inspection alone does not change your desktop.
+4. If the file contains the layout you want, select **Restore layout** and read the confirmation before continuing. Explorer restarts and open folder windows may close.
+5. Check your actual desktop afterward and refresh the map. If necessary, use **Snapshots** to restore the pre-change snapshot.
+
+The app reads only the desktop layout key from that hive. It does not restore the entire profile. The export date does not guarantee Explorer had saved the exact arrangement you remember; another available date may be more useful. Restoration remains an implemented but not end-to-end-validated recovery operation.
+
+### If No Older Copies Are Available
+
+A useful shadow copy must already exist from before the change. Enabling System Protection now cannot recreate an earlier file. ShadowExplorer's [official FAQ](https://www.shadowexplorer.com/documentation/faq.html) explains this prerequisite.
+
+If the date list is empty or your profile is absent, check that you selected the correct drive. If no suitable copy remains, use an existing profile backup or an app snapshot instead. Do not delete restore points or shadow copies while searching. Shadow copies are not a substitute for separate backups.
 
 ## Data and Backups
 
